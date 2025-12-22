@@ -5,10 +5,11 @@ from sklearn.model_selection import train_test_split
 import random
 import numpy as np
 
+# Setup MLflow
 mlflow.set_experiment("Penguins Experiment")
 
+# Load Data
 data = pd.read_csv("penguins_clean.csv")
- 
 X_train, X_test, y_train, y_test = train_test_split(
     data.drop("species", axis=1),
     data["species"],
@@ -16,7 +17,8 @@ X_train, X_test, y_train, y_test = train_test_split(
     test_size=0.2
 )
 
-input_example = X_train[0:5]
+# Ambil contoh input untuk signature
+input_example = X_train.iloc[0:5]
 
 with mlflow.start_run():
     # Log parameters (Best Hyperparameters dari tuning)
@@ -24,15 +26,17 @@ with mlflow.start_run():
     max_depth = None
     min_samples_split = 2
     mlflow.autolog()
+
     # Train model
     model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, min_samples_split=min_samples_split, random_state=42)
+    model.fit(X_train, y_train) 
+    
+    # Log Metrics
+    accuracy = model.score(X_test, y_test)
+    mlflow.log_metric("accuracy", accuracy)
+
     mlflow.sklearn.log_model(
         sk_model=model,
         artifact_path="model",
         input_example=input_example
     )
-    model.fit(X_train, y_train)
-    # Log metrics
-    accuracy = model.score(X_test, y_test)
-
-    mlflow.log_metric("accuracy", accuracy)
