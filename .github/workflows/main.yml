@@ -69,5 +69,4 @@ jobs:
     
     - name: Push to Docker Hub
       run: |
-        # Perhatikan: Nama image harus SAMA dengan yang di-build di langkah sebelumnya
         docker push ghifariahmad20/submission-model:latest
