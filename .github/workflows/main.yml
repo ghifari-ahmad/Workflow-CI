@@ -38,26 +38,26 @@ jobs:
     # 6. Build Docker Image (PERBAIKAN DI SINI)
     - name: Build Docker Image using MLflow
       run: |
-        # Kita cari folder run terakhir tanpa peduli ID eksperimennya (0, 1, dst)
-        # ls -td mengurutkan berdasarkan waktu (terbaru di atas)
-        # MLProject/mlruns/*/* artinya: cari di semua ID eksperimen, dan semua Run ID
+        echo "Mencari lokasi model..."
         
-        LATEST_RUN=$(ls -td MLProject/mlruns/*/* | head -1)
+        # LOGIKA BARU:
+        # Gunakan 'find' untuk mencari folder bernama "model" yang ada di dalam "artifacts"
+        # Pipe ke 'ls -td' untuk mengurutkan berdasarkan waktu (terbaru paling atas)
+        # Ambil baris pertama
         
-        echo "Latest Run Path detected: $LATEST_RUN"
+        MODEL_DIR=$(find MLProject/mlruns -type d -path "*/artifacts/model" | xargs ls -td | head -n 1)
         
-        if [ -z "$LATEST_RUN" ]; then
-          echo "Error: Tidak ada MLflow run yang ditemukan!"
+        if [ -z "$MODEL_DIR" ]; then
+          echo "Error: Model directory tidak ditemukan! Pastikan modelling.py berhasil dijalankan."
+          # Debugging: Tampilkan isi folder mlruns untuk pengecekan
+          ls -R MLProject/mlruns
           exit 1
         fi
 
-        # Pastikan folder model ada di dalamnya (biasanya di artifacts/model)
-        MODEL_PATH="$LATEST_RUN/artifacts/model"
-        echo "Model Path: $MODEL_PATH"
+        echo "Path model ditemukan: $MODEL_DIR"
 
-        # Build image. Ganti 'ghifariahmad20' sesuai username Docker Hub kamu
-        # Pastikan nama image SAMA persis dengan langkah Push nanti
-        mlflow models build-docker -m "$MODEL_PATH" -n "ghifariahmad20/submission-model:latest" --enable-mlserver
+        # Build image menggunakan path yang sudah pasti benar
+        mlflow models build-docker -m "$MODEL_DIR" -n "ghifariahmad20/submission-model:latest" --enable-mlserver
 
     # 7. Login & Push ke Docker Hub
     - name: Login to Docker Hub
