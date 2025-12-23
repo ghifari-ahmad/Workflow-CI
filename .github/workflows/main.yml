@@ -36,8 +36,8 @@ jobs:
         # Path Absolut Project
         PROJECT_DIR=$(pwd)/MLProject
         
-        # Cari folder berisi MLmmodel (Absolute Path)
-        MODEL_DIR=$(find "$PROJECT_DIR/mlruns" -name "MLProject" | xargs dirname | head -n 1)
+        # Cari folder berisi MLmodel (Absolute Path)
+        MODEL_DIR=$(find "$PROJECT_DIR/mlruns" -name "MLmodel" | xargs dirname | head -n 1)
         
         if [ -z "$MODEL_DIR" ]; then
           ls -R MLProject/mlruns
