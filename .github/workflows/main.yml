@@ -29,6 +29,19 @@ jobs:
         cd MLProject
         python modelling.py
 
+    - name: Show MLflow Run ID
+      run: |
+        echo "Mencari Run ID terbaru..."
+        # Mengambil run_id dari file meta.yaml terbaru
+        LATEST_RUN=$(find MLProject/mlruns -name "meta.yaml" | xargs grep "run_id" | head -n 1)
+        echo "Run ID ditemukan: $LATEST_RUN"
+        
+    - name: Upload MLflow Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: penguins-experiments
+        path: MLProject/mlruns
+
     # Build Docker Image
     - name: Build Docker Image using MLflow
       run: |
