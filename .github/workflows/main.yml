@@ -9,58 +9,47 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    # 1. Checkout kode
+    # Checkout kode
     - uses: actions/checkout@v3
 
-    # 2. Setup Python
+    # Setup Python
     - name: Set up Python 3.12.10
       uses: actions/setup-python@v4
       with:
         python-version: '3.12.10' 
 
-    # 3. Install Dependencies
+    # Install Dependencies
     - name: Install dependencies
       run: |
         pip install -r MLProject/requirements.txt
 
-    # 4. Run Training Script
+    # Run Training Script
     - name: Train Model
       run: |
         cd MLProject
         python modelling.py
 
-    # 5. DEBUG: Cek struktur folder (Opsional, untuk memastikan mlruns ada)
-    - name: Debug Directory Structure
-      run: |
-        echo "Listing MLProject directory:"
-        ls -R MLProject
-
-    # 6. Build Docker Image (FIXED: Absolute Path & Validation)
+    # Build Docker Image
     - name: Build Docker Image using MLflow
       run: |
-        echo "Mencari lokasi model..."
         
-        # 1. Dapatkan Path Absolut Project
+        # Path Absolut Project
         PROJECT_DIR=$(pwd)/MLProject
         
-        # 2. Cari folder model (Absolute Path)
-        # Kita cari folder yang WAJIB berisi file bernama "MLmodel"
+        # Cari folder berisi MLmmodel (Absolute Path)
         MODEL_DIR=$(find "$PROJECT_DIR/mlruns" -name "MLmodel" | xargs dirname | head -n 1)
         
         if [ -z "$MODEL_DIR" ]; then
-          echo "❌ Error: File MLmodel tidak ditemukan! Pastikan set_tracking_uri dihapus di modelling.py"
-          # Debugging: List isi mlruns untuk melihat apa yang sebenarnya terbentuk
           ls -R MLProject/mlruns
           exit 1
         fi
 
         echo "✅ Path model ditemukan: $MODEL_DIR"
         
-        # 3. Build image menggunakan Absolute Path
-        # Ini mencegah error 'No such file' saat MLflow pindah ke folder /tmp
+        # Build image pakai Absolute Path
         mlflow models build-docker -m "$MODEL_DIR" -n "ghifariahmad20/submission-model:latest" --enable-mlserver
 
-    # 7. Login & Push ke Docker Hub
+    # Login & Push ke Docker Hub
     - name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
